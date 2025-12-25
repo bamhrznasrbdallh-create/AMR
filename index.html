@@ -20,6 +20,7 @@
             --cart-color: #00ff00;
             --button-color: #006400;
             --discount-color: #ff6b6b;
+            --currency-color: #4da6ff;
         }
         
         * {
@@ -475,6 +476,66 @@
             color: #999;
             font-size: 0.9rem;
             margin-left: 5px;
+        }
+        
+        /* إظهار العملة الحالية */
+        .current-currency {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--currency-color);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .current-currency i {
+            margin-left: 5px;
+        }
+        
+        .currency-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: var(--light-bg);
+            border-radius: 8px;
+        }
+        
+        .currency-flag {
+            width: 24px;
+            height: 16px;
+            border-radius: 3px;
+            object-fit: cover;
+        }
+        
+        .currency-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .currency-option:hover {
+            background-color: var(--medium-bg);
+        }
+        
+        .currency-option.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .currency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
         }
         
         /* إضافات CSS الأصلية */
@@ -1044,6 +1105,10 @@
             .cart-actions {
                 flex-direction: column;
             }
+            
+            .currency-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
         
         @media (min-width: 769px) {
@@ -1112,6 +1177,15 @@
             <button class="sort-btn" data-sort="newest">الأحدث</button>
         </div>
 
+        <!-- إظهار العملة الحالية -->
+        <div class="currency-selector" id="current-currency-display">
+            <span class="current-currency" id="current-currency">
+                <i class="fas fa-money-bill-wave"></i>
+                <span id="currency-name">جاري التحميل...</span>
+            </span>
+            <span id="currency-rate">سعر الصرف: جاري التحديث...</span>
+        </div>
+
         <div class="categories" id="categories-container">
         </div>
 
@@ -1131,6 +1205,7 @@
                 <div class="admin-tab active" data-tab="products">إدارة المنتجات</div>
                 <div class="admin-tab" data-tab="categories">إدارة الأقسام</div>
                 <div class="admin-tab" data-tab="messages">إدارة الرسائل</div>
+                <div class="admin-tab" data-tab="currencies">إدارة العملات</div>
                 <div class="admin-tab" data-tab="colors">تخصيص الألوان</div>
                 <div class="admin-tab" data-tab="media">إدارة الوسائط</div>
                 <div class="admin-tab" data-tab="stats">الإحصائيات</div>
@@ -1142,8 +1217,15 @@
                 <h3>إضافة منتج جديد</h3>
                 <form class="admin-form" id="add-product-form">
                     <input type="text" id="product-title" placeholder="اسم المنتج" required>
-                    <input type="text" id="product-price" placeholder="سعر المنتج (مثال: 5 ر.س)" required>
-                    <input type="text" id="product-discount" placeholder="نسبة الخصم % (اختياري)">
+                    <div class="currency-selector" style="margin-bottom: 15px;">
+                        <select id="product-currency" style="width: 100%;">
+                            <option value="YER">ريال يمني (ر.ي)</option>
+                            <option value="SAR">ريال سعودي (ر.س)</option>
+                            <option value="USD">دولار أمريكي ($)</option>
+                        </select>
+                    </div>
+                    <input type="number" id="product-price" placeholder="سعر المنتج (مثال: 5)" step="0.01" min="0" required>
+                    <input type="number" id="product-discount" placeholder="نسبة الخصم % (اختياري)" min="0" max="100">
                     <select id="product-category" required>
                         <option value="">اختر القسم</option>
                     </select>
@@ -1184,6 +1266,73 @@
                 
                 <h3 style="margin-top: 20px;">الرسائل المنشورة</h3>
                 <div id="admin-messages-list">
+                </div>
+            </div>
+            
+            <div class="admin-tab-content" id="admin-currencies" style="display: none;">
+                <h3>إدارة العملات</h3>
+                
+                <div class="color-section">
+                    <h4>العملة الأساسية للموقع</h4>
+                    <div class="currency-grid" id="base-currency-selector">
+                        <div class="currency-option" data-currency="YER">
+                            <span>🇾🇪</span>
+                            <span>الريال اليمني (ر.ي)</span>
+                        </div>
+                        <div class="currency-option" data-currency="SAR">
+                            <span>🇸🇦</span>
+                            <span>الريال السعودي (ر.س)</span>
+                        </div>
+                        <div class="currency-option" data-currency="USD">
+                            <span>🇺🇸</span>
+                            <span>الدولار الأمريكي ($)</span>
+                        </div>
+                    </div>
+                    
+                    <button id="save-base-currency" style="margin-top: 15px; width: 100%;">حفظ العملة الأساسية</button>
+                </div>
+                
+                <div class="color-section">
+                    <h4>أسعار الصرف الحالية</h4>
+                    <div id="exchange-rates-display">
+                        <p>جاري تحميل أسعار الصرف...</p>
+                    </div>
+                    <button id="update-exchange-rates" style="margin-top: 10px; width: 100%;">تحديث أسعار الصرف</button>
+                </div>
+                
+                <div class="color-section">
+                    <h4>تحويل العملات اليدوي</h4>
+                    <form class="admin-form" id="manual-conversion-form">
+                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center;">
+                            <input type="number" id="convert-from" placeholder="المبلغ" step="0.01" min="0">
+                            <select id="convert-from-currency">
+                                <option value="YER">ر.ي</option>
+                                <option value="SAR">ر.س</option>
+                                <option value="USD">$</option>
+                            </select>
+                            <span style="text-align: center;">→</span>
+                            <input type="text" id="convert-to" placeholder="النتيجة" readonly>
+                            <select id="convert-to-currency">
+                                <option value="YER">ر.ي</option>
+                                <option value="SAR" selected>ر.س</option>
+                                <option value="USD">$</option>
+                            </select>
+                        </div>
+                        <button type="button" id="convert-currency">تحويل</button>
+                    </form>
+                </div>
+                
+                <div class="color-section">
+                    <h4>الاكتشاف الجغرافي التلقائي</h4>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <input type="checkbox" id="auto-geolocation" checked>
+                        <label for="auto-geolocation">تفعيل الاكتشاف الجغرافي التلقائي</label>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #999;">عند تفعيل هذه الميزة، سيتم اكتشاف موقع المستخدم تلقائياً وتحويل العملة بناءً على بلده</p>
+                    
+                    <div id="geolocation-status" style="margin-top: 15px; padding: 10px; background: var(--medium-bg); border-radius: 5px;">
+                        <p>جاري اكتشاف الموقع...</p>
+                    </div>
                 </div>
             </div>
             
@@ -1388,15 +1537,15 @@
                 </div>
                 <div class="summary-item">
                     <span>المجموع الجزئي:</span>
-                    <span id="summary-subtotal">0 ر.س</span>
+                    <span id="summary-subtotal">0 <span id="summary-currency"></span></span>
                 </div>
                 <div class="summary-item">
                     <span>إجمالي الخصومات:</span>
-                    <span id="summary-discount">0 ر.س</span>
+                    <span id="summary-discount">0 <span id="discount-currency"></span></span>
                 </div>
                 <div class="summary-item">
                     <span>المبلغ الإجمالي:</span>
-                    <span id="summary-total" class="summary-total">0 ر.س</span>
+                    <span id="summary-total" class="summary-total">0 <span id="total-currency"></span></span>
                 </div>
             </div>
             
@@ -1437,6 +1586,39 @@
         let currentSort = 'default';
         let searchQuery = '';
         let globalDiscount = JSON.parse(localStorage.getItem('extension_global_discount')) || 0;
+        
+        // بيانات العملات
+        const currencies = {
+            YER: {
+                code: 'YER',
+                name: 'الريال اليمني',
+                symbol: 'ر.ي',
+                flag: '🇾🇪',
+                country: 'اليمن',
+                exchangeRate: 1 // الريال اليمني هو العملة الأساسية
+            },
+            SAR: {
+                code: 'SAR',
+                name: 'الريال السعودي',
+                symbol: 'ر.س',
+                flag: '🇸🇦',
+                country: 'السعودية',
+                exchangeRate: 0.02 // 1 ريال سعودي = 50 ريال يمني (تقريباً)
+            },
+            USD: {
+                code: 'USD',
+                name: 'الدولار الأمريكي',
+                symbol: '$',
+                flag: '🇺🇸',
+                country: 'الولايات المتحدة',
+                exchangeRate: 0.0075 // 1 دولار = 133 ريال يمني (تقريباً)
+            }
+        };
+        
+        let baseCurrency = localStorage.getItem('extension_base_currency') || 'YER';
+        let userCurrency = localStorage.getItem('extension_user_currency') || baseCurrency;
+        let autoGeolocation = localStorage.getItem('extension_auto_geolocation') !== 'false'; // مفعل افتراضياً
+        let userCountry = localStorage.getItem('extension_user_country') || null;
         
         // قائمة الألوان الكاملة
         const colorPalette = [
@@ -1540,6 +1722,27 @@
         const removeGlobalDiscountBtn = document.getElementById('remove-global-discount');
         const discountedProductsList = document.getElementById('discounted-products-list');
         const productDiscountInput = document.getElementById('product-discount');
+        const productCurrencySelect = document.getElementById('product-currency');
+        const productPriceInput = document.getElementById('product-price');
+        
+        // عناصر العملات الجديدة
+        const currentCurrencyDisplay = document.getElementById('current-currency-display');
+        const currentCurrencyName = document.getElementById('currency-name');
+        const currencyRate = document.getElementById('currency-rate');
+        const baseCurrencySelector = document.getElementById('base-currency-selector');
+        const saveBaseCurrencyBtn = document.getElementById('save-base-currency');
+        const exchangeRatesDisplay = document.getElementById('exchange-rates-display');
+        const updateExchangeRatesBtn = document.getElementById('update-exchange-rates');
+        const convertFromInput = document.getElementById('convert-from');
+        const convertFromCurrency = document.getElementById('convert-from-currency');
+        const convertToInput = document.getElementById('convert-to');
+        const convertToCurrency = document.getElementById('convert-to-currency');
+        const convertCurrencyBtn = document.getElementById('convert-currency');
+        const autoGeolocationCheckbox = document.getElementById('auto-geolocation');
+        const geolocationStatus = document.getElementById('geolocation-status');
+        const summaryCurrency = document.getElementById('summary-currency');
+        const discountCurrency = document.getElementById('discount-currency');
+        const totalCurrency = document.getElementById('total-currency');
         
         // عناصر الإحصائيات
         const totalProductsElement = document.getElementById('total-products');
@@ -1563,32 +1766,73 @@
             return priceMatch ? parseFloat(priceMatch[0]) : 0;
         }
         
-        function formatPrice(price) {
-            return `${price.toFixed(2)} ر.س`;
+        function formatPrice(price, currencyCode = userCurrency) {
+            const currency = currencies[currencyCode];
+            if (!currency) return `${price.toFixed(2)} ${currencyCode}`;
+            
+            // تحويل السعر من العملة الأساسية إلى العملة المطلوبة
+            const convertedPrice = convertCurrency(price, baseCurrency, currencyCode);
+            return `${convertedPrice.toFixed(2)} ${currency.symbol}`;
+        }
+        
+        // تحويل العملات
+        function convertCurrency(amount, fromCurrency, toCurrency) {
+            if (fromCurrency === toCurrency) return amount;
+            
+            // أولاً تحويل إلى العملة الأساسية (YER)
+            let amountInBase;
+            if (fromCurrency === 'YER') {
+                amountInBase = amount;
+            } else {
+                amountInBase = amount / currencies[fromCurrency].exchangeRate;
+            }
+            
+            // ثم تحويل إلى العملة المطلوبة
+            if (toCurrency === 'YER') {
+                return amountInBase;
+            } else {
+                return amountInBase * currencies[toCurrency].exchangeRate;
+            }
         }
         
         function calculateProductPrice(product) {
-            let price = extractPrice(product.price);
+            // استخراج السعر الأصلي بناءً على العملة المخزنة
+            let basePrice = product.basePrice || extractPrice(product.price);
+            let priceCurrency = product.currency || baseCurrency;
+            
+            // تحويل السعر إلى العملة الأساسية (YER) للتخزين
+            if (priceCurrency !== 'YER') {
+                basePrice = convertCurrency(basePrice, priceCurrency, 'YER');
+            }
+            
             let discount = 0;
-            let originalPrice = price;
+            let originalPrice = basePrice;
             
             // تطبيق خصم المنتج المباشر
             if (product.discount && product.discount > 0) {
-                discount += (price * product.discount / 100);
-                price = price - discount;
+                discount += (basePrice * product.discount / 100);
+                basePrice = basePrice - discount;
             }
             
             // تطبيق الخصم العام
             if (globalDiscount > 0) {
                 const globalDiscountAmount = originalPrice * globalDiscount / 100;
                 discount += globalDiscountAmount;
-                price = price - globalDiscountAmount;
+                basePrice = basePrice - globalDiscountAmount;
             }
             
+            // تحويل السعر النهائي إلى عملة المستخدم للعرض
+            const displayPrice = convertCurrency(basePrice, 'YER', userCurrency);
+            const displayOriginal = convertCurrency(originalPrice, 'YER', userCurrency);
+            const displayDiscount = convertCurrency(discount, 'YER', userCurrency);
+            
             return {
-                original: originalPrice,
-                discounted: Math.max(0, price),
-                discount: discount,
+                original: originalPrice, // في YER للتخزين
+                displayOriginal: displayOriginal, // في عملة المستخدم للعرض
+                discounted: Math.max(0, basePrice), // في YER للتخزين
+                displayDiscounted: displayPrice, // في عملة المستخدم للعرض
+                discount: discount, // في YER للتخزين
+                displayDiscount: displayDiscount, // في عملة المستخدم للعرض
                 hasDiscount: discount > 0
             };
         }
@@ -1617,6 +1861,9 @@
             renderAdminProductsList();
             updateStats();
             renderDiscountedProductsList();
+            updateCurrencyDisplay();
+            renderCurrencyOptions();
+            updateExchangeRatesDisplay();
             
             // تحديث الخصم العام في النموذج
             globalDiscountPercent.value = globalDiscount;
@@ -1649,12 +1896,145 @@
             // تحديث حالة زر الصورة المتحركة
             updateFloatingImageToggle();
             
+            // تحديث إعدادات الجغرافية
+            autoGeolocationCheckbox.checked = autoGeolocation;
+            
             // إظهار شاشة الترحيب للمستخدم الجديد
             if (!localStorage.getItem('extension_welcome_shown')) {
                 setTimeout(() => {
                     welcomeModal.style.display = 'flex';
                 }, 500);
             }
+            
+            // تشغيل الاكتشاف الجغرافي إذا كان مفعلاً
+            if (autoGeolocation && !userCountry) {
+                detectUserLocation();
+            }
+        }
+        
+        // تحديث عرض العملة
+        function updateCurrencyDisplay() {
+            const currency = currencies[userCurrency];
+            currentCurrencyName.textContent = `${currency.name} (${currency.symbol})`;
+            
+            // حساب سعر الصرف بالنسبة للعملة الأساسية
+            const exchangeRate = currency.exchangeRate;
+            const baseCurrencyName = currencies[baseCurrency].name;
+            
+            if (userCurrency === baseCurrency) {
+                currencyRate.textContent = `العملة الأساسية: ${baseCurrencyName}`;
+            } else {
+                const rateText = `1 ${currency.symbol} = ${(1/exchangeRate).toFixed(2)} ${currencies[baseCurrency].symbol}`;
+                currencyRate.textContent = `سعر الصرف: ${rateText}`;
+            }
+            
+            // تحديث رموز العملة في السلة
+            summaryCurrency.textContent = currency.symbol;
+            discountCurrency.textContent = currency.symbol;
+            totalCurrency.textContent = currency.symbol;
+        }
+        
+        // عرض خيارات العملة
+        function renderCurrencyOptions() {
+            const currencyOptions = baseCurrencySelector.querySelectorAll('.currency-option');
+            currencyOptions.forEach(option => {
+                const currencyCode = option.dataset.currency;
+                if (currencyCode === baseCurrency) {
+                    option.classList.add('active');
+                } else {
+                    option.classList.remove('active');
+                }
+            });
+        }
+        
+        // تحديث عرض أسعار الصرف
+        function updateExchangeRatesDisplay() {
+            let html = '<div style="display: grid; gap: 10px;">';
+            
+            Object.values(currencies).forEach(currency => {
+                if (currency.code === baseCurrency) {
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--medium-bg); border-radius: 5px;">
+                            <div>
+                                <strong>${currency.flag} ${currency.name} (${currency.symbol})</strong>
+                                <div style="font-size: 0.8rem; color: var(--accent-color);">العملة الأساسية</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.2rem; font-weight: bold;">1.00</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const rateFromBase = (1 / currency.exchangeRate).toFixed(2);
+                    const rateToBase = currency.exchangeRate.toFixed(4);
+                    
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--medium-bg); border-radius: 5px;">
+                            <div>
+                                <strong>${currency.flag} ${currency.name} (${currency.symbol})</strong>
+                                <div style="font-size: 0.8rem; color: #999;">${currency.country}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.2rem; font-weight: bold;">${rateFromBase}</div>
+                                <div style="font-size: 0.8rem; color: #999;">1 ${currency.symbol} = ${rateToBase} ${currencies[baseCurrency].symbol}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += '</div>';
+            exchangeRatesDisplay.innerHTML = html;
+        }
+        
+        // اكتشاف موقع المستخدم
+        function detectUserLocation() {
+            geolocationStatus.innerHTML = '<p>جاري اكتشاف الموقع الجغرافي...</p>';
+            
+            if (!navigator.geolocation) {
+                geolocationStatus.innerHTML = '<p style="color: var(--error-color);">المتصفح لا يدعم الاكتشاف الجغرافي</p>';
+                return;
+            }
+            
+            // محاولة الحصول على الموقع من IP كبديل
+            fetch('https://ipapi.co/json/')
+                .then(response => response.json())
+                .then(data => {
+                    userCountry = data.country_code;
+                    localStorage.setItem('extension_user_country', userCountry);
+                    
+                    // تحديد العملة بناءً على البلد
+                    let detectedCurrency = 'YER'; // افتراضي
+                    
+                    if (userCountry === 'SA' || userCountry === 'السعودية') {
+                        detectedCurrency = 'SAR';
+                    } else if (userCountry === 'US' || userCountry === 'الولايات المتحدة') {
+                        detectedCurrency = 'USD';
+                    } else if (userCountry === 'YE' || userCountry === 'اليمن') {
+                        detectedCurrency = 'YER';
+                    }
+                    
+                    // تحديث عملة المستخدم إذا كانت مختلفة
+                    if (detectedCurrency !== userCurrency) {
+                        userCurrency = detectedCurrency;
+                        localStorage.setItem('extension_user_currency', userCurrency);
+                        updateCurrencyDisplay();
+                        renderProducts();
+                        showNotification(`تم اكتشاف موقعك: ${data.country_name} - تم تغيير العملة إلى ${currencies[userCurrency].name}`);
+                    }
+                    
+                    geolocationStatus.innerHTML = `
+                        <p style="color: var(--accent-color);">✅ تم اكتشاف الموقع بنجاح</p>
+                        <p style="font-size: 0.9rem; margin-top: 5px;">
+                            البلد: ${data.country_name} (${userCountry})<br>
+                            العملة: ${currencies[userCurrency].name}
+                        </p>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error detecting location:', error);
+                    geolocationStatus.innerHTML = '<p style="color: var(--error-color);">فشل في اكتشاف الموقع الجغرافي</p>';
+                });
         }
         
         // تحديث الإحصائيات
@@ -1684,6 +2064,7 @@
             recentProductsElement.innerHTML = '';
             
             recent.forEach(product => {
+                const productPrice = calculateProductPrice(product);
                 const productElement = document.createElement('div');
                 productElement.className = 'message-item';
                 productElement.innerHTML = `
@@ -1691,7 +2072,9 @@
                         <img src="${product.image}" alt="${product.title}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
                         <div>
                             <strong>${product.title}</strong>
-                            <div style="font-size: 0.8rem; color: #999;">${product.price} - ${new Date(product.createdAt).toLocaleDateString('ar-SA')}</div>
+                            <div style="font-size: 0.8rem; color: #999;">
+                                ${formatPrice(productPrice.displayDiscounted)} - ${new Date(product.createdAt).toLocaleDateString('ar-SA')}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1995,15 +2378,15 @@
             switch (currentSort) {
                 case 'price-asc':
                     filteredProducts.sort((a, b) => {
-                        const priceA = calculateProductPrice(a).discounted;
-                        const priceB = calculateProductPrice(b).discounted;
+                        const priceA = calculateProductPrice(a).displayDiscounted;
+                        const priceB = calculateProductPrice(b).displayDiscounted;
                         return priceA - priceB;
                     });
                     break;
                 case 'price-desc':
                     filteredProducts.sort((a, b) => {
-                        const priceA = calculateProductPrice(a).discounted;
-                        const priceB = calculateProductPrice(b).discounted;
+                        const priceA = calculateProductPrice(a).displayDiscounted;
+                        const priceB = calculateProductPrice(b).displayDiscounted;
                         return priceB - priceA;
                     });
                     break;
@@ -2041,9 +2424,9 @@
                     <div class="product-info">
                         <h3 class="product-title">${product.title}</h3>
                         <p class="product-price">
-                            ${formatPrice(productPrice.discounted)}
+                            ${formatPrice(productPrice.displayDiscounted)}
                             ${productPrice.hasDiscount ? `<span class="discount-badge">خصم</span>` : ''}
-                            ${productPrice.hasDiscount ? `<span class="original-price">${formatPrice(productPrice.original)}</span>` : ''}
+                            ${productPrice.hasDiscount ? `<span class="original-price">${formatPrice(productPrice.displayOriginal)}</span>` : ''}
                         </p>
                         <p class="product-description">${product.description}</p>
                         <div class="product-actions">
@@ -2147,6 +2530,7 @@
             adminProductsList.innerHTML = '';
             
             products.forEach((product, index) => {
+                const productPrice = calculateProductPrice(product);
                 const productElement = document.createElement('div');
                 productElement.className = 'message-item';
                 productElement.innerHTML = `
@@ -2154,7 +2538,7 @@
                         <img src="${product.image}" alt="${product.title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
                         <div style="flex-grow: 1;">
                             <h4>${product.title}</h4>
-                            <p>${product.price} ${product.discount ? `(خصم: ${product.discount}%)` : ''} - ${product.category}</p>
+                            <p>${formatPrice(productPrice.displayDiscounted)} ${product.discount ? `(خصم: ${product.discount}%)` : ''} - ${product.category}</p>
                             <p style="font-size: 0.8rem; color: #999;">${product.description}</p>
                         </div>
                     </div>
@@ -2182,8 +2566,9 @@
             if (!product) return;
 
             document.getElementById('product-title').value = product.title;
-            document.getElementById('product-price').value = product.price;
+            document.getElementById('product-price').value = product.basePrice || extractPrice(product.price);
             document.getElementById('product-discount').value = product.discount || '';
+            document.getElementById('product-currency').value = product.currency || baseCurrency;
             document.getElementById('product-category').value = product.category;
             document.getElementById('product-description').value = product.description;
             
@@ -2282,9 +2667,9 @@
                     </div>
                 `;
                 summaryCount.textContent = '0';
-                summarySubtotal.textContent = '0 ر.س';
-                summaryDiscount.textContent = '0 ر.س';
-                summaryTotal.textContent = '0 ر.س';
+                summarySubtotal.textContent = `0 ${currencies[userCurrency].symbol}`;
+                summaryDiscount.textContent = `0 ${currencies[userCurrency].symbol}`;
+                summaryTotal.textContent = `0 ${currencies[userCurrency].symbol}`;
                 return;
             }
             
@@ -2293,8 +2678,8 @@
             
             cart.forEach((item, index) => {
                 const itemPrice = calculateProductPrice(item);
-                subtotal += itemPrice.original;
-                totalDiscount += itemPrice.discount;
+                subtotal += itemPrice.displayOriginal;
+                totalDiscount += itemPrice.displayDiscount;
                 
                 const cartItem = document.createElement('div');
                 cartItem.className = 'cart-item';
@@ -2303,7 +2688,7 @@
                     <div class="cart-item-info">
                         <div class="cart-item-title">${item.title}</div>
                         <div class="cart-item-price">
-                            ${formatPrice(itemPrice.discounted)}
+                            ${formatPrice(itemPrice.displayDiscounted)}
                             ${itemPrice.hasDiscount ? `<span class="discount-badge">-${Math.round((itemPrice.discount/itemPrice.original)*100)}%</span>` : ''}
                         </div>
                         <div class="cart-item-category">${item.category}</div>
@@ -2316,9 +2701,9 @@
             const total = subtotal - totalDiscount;
             
             summaryCount.textContent = cart.length;
-            summarySubtotal.textContent = formatPrice(subtotal);
-            summaryDiscount.textContent = formatPrice(totalDiscount);
-            summaryTotal.textContent = formatPrice(total);
+            summarySubtotal.textContent = `${subtotal.toFixed(2)} ${currencies[userCurrency].symbol}`;
+            summaryDiscount.textContent = `${totalDiscount.toFixed(2)} ${currencies[userCurrency].symbol}`;
+            summaryTotal.textContent = `${total.toFixed(2)} ${currencies[userCurrency].symbol}`;
             
             document.querySelectorAll('.remove-from-cart').forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -2333,7 +2718,8 @@
             e.preventDefault();
             
             const title = document.getElementById('product-title').value;
-            const price = document.getElementById('product-price').value;
+            const price = parseFloat(document.getElementById('product-price').value);
+            const currency = document.getElementById('product-currency').value;
             const discount = parseInt(document.getElementById('product-discount').value) || 0;
             const category = document.getElementById('product-category').value;
             const description = document.getElementById('product-description').value;
@@ -2341,6 +2727,11 @@
             
             if (!category) {
                 alert('يرجى اختيار قسم للمنتج');
+                return;
+            }
+            
+            if (price <= 0) {
+                alert('يرجى إدخال سعر صحيح للمنتج');
                 return;
             }
             
@@ -2354,10 +2745,12 @@
                             products[productIndex] = {
                                 ...products[productIndex],
                                 title,
-                                price,
+                                basePrice: price,
+                                currency,
                                 discount,
                                 category,
                                 description,
+                                price: `${price} ${currencies[currency].symbol}`,
                                 image: e.target.result
                             };
                             localStorage.setItem('extension_products', JSON.stringify(products));
@@ -2370,10 +2763,12 @@
                         products[productIndex] = {
                             ...products[productIndex],
                             title,
-                            price,
+                            basePrice: price,
+                            currency,
                             discount,
                             category,
-                            description
+                            description,
+                            price: `${price} ${currencies[currency].symbol}`
                         };
                         localStorage.setItem('extension_products', JSON.stringify(products));
                         resetProductForm();
@@ -2393,10 +2788,12 @@
                     const newProduct = {
                         id: Date.now().toString(),
                         title,
-                        price: price,
-                        discount: discount,
+                        basePrice: price,
+                        currency,
+                        discount,
                         category,
                         description,
+                        price: `${price} ${currencies[currency].symbol}`,
                         image: e.target.result,
                         sold: false,
                         createdAt: new Date().toISOString()
@@ -2421,6 +2818,8 @@
             productSubmitBtn.removeAttribute('data-edit-id');
             isEditingProduct = false;
             editingProductId = null;
+            // تعيين العملة الافتراضية
+            productCurrencySelect.value = baseCurrency;
         }
         
         // إضافة قسم جديد
@@ -2514,6 +2913,44 @@
             showNotification('تم تغيير اسم الموقع بنجاح');
         }
         
+        // تغيير العملة الأساسية
+        function changeBaseCurrency() {
+            const selectedOption = baseCurrencySelector.querySelector('.currency-option.active');
+            if (selectedOption) {
+                const newCurrency = selectedOption.dataset.currency;
+                if (newCurrency !== baseCurrency) {
+                    baseCurrency = newCurrency;
+                    localStorage.setItem('extension_base_currency', baseCurrency);
+                    
+                    // إذا كانت عملة المستخدم هي العملة القديمة، قم بتحديثها
+                    if (userCurrency !== baseCurrency && !autoGeolocation) {
+                        userCurrency = baseCurrency;
+                        localStorage.setItem('extension_user_currency', userCurrency);
+                    }
+                    
+                    updateCurrencyDisplay();
+                    updateExchangeRatesDisplay();
+                    renderProducts();
+                    showNotification(`تم تغيير العملة الأساسية إلى ${currencies[baseCurrency].name}`);
+                }
+            }
+        }
+        
+        // تحويل العملات يدوياً
+        function convertCurrencyManual() {
+            const amount = parseFloat(convertFromInput.value);
+            const fromCurrency = convertFromCurrency.value;
+            const toCurrency = convertToCurrency.value;
+            
+            if (!amount || amount <= 0) {
+                alert('يرجى إدخال مبلغ صحيح');
+                return;
+            }
+            
+            const convertedAmount = convertCurrency(amount, fromCurrency, toCurrency);
+            convertToInput.value = convertedAmount.toFixed(2);
+        }
+        
         // تطبيق الخصم العام
         function applyGlobalDiscount(e) {
             e.preventDefault();
@@ -2537,6 +2974,19 @@
             localStorage.setItem('extension_global_discount', JSON.stringify(globalDiscount));
             updateUI();
             showNotification('تم إزالة الخصم العام');
+        }
+        
+        // تغيير إعدادات الجغرافية
+        function toggleGeolocation() {
+            autoGeolocation = autoGeolocationCheckbox.checked;
+            localStorage.setItem('extension_auto_geolocation', autoGeolocation);
+            
+            if (autoGeolocation) {
+                detectUserLocation();
+                showNotification('تم تفعيل الاكتشاف الجغرافي التلقائي');
+            } else {
+                showNotification('تم إيقاف الاكتشاف الجغرافي التلقائي');
+            }
         }
         
         // التعامل مع دخول المدير
@@ -2575,12 +3025,12 @@
             
             cart.forEach((item, index) => {
                 const itemPrice = calculateProductPrice(item);
-                subtotal += itemPrice.original;
-                totalDiscount += itemPrice.discount;
+                subtotal += itemPrice.displayOriginal;
+                totalDiscount += itemPrice.displayDiscount;
                 
                 message += `*${index + 1}. ${item.title}*\n`;
                 message += `   📦 القسم: ${item.category}\n`;
-                message += `   💰 السعر: ${formatPrice(itemPrice.discounted)}`;
+                message += `   💰 السعر: ${formatPrice(itemPrice.displayDiscounted)}`;
                 
                 if (itemPrice.hasDiscount) {
                     const discountPercent = Math.round((itemPrice.discount/itemPrice.original)*100);
@@ -2595,9 +3045,10 @@
             message += `══════════════════════════\n`;
             message += `📊 *ملخص الطلب:*\n`;
             message += `   عدد المنتجات: ${cart.length}\n`;
-            message += `   المجموع الجزئي: ${formatPrice(subtotal)}\n`;
-            message += `   إجمالي الخصومات: ${formatPrice(totalDiscount)}\n`;
-            message += `   *المبلغ الإجمالي: ${formatPrice(total)}*\n\n`;
+            message += `   المجموع الجزئي: ${subtotal.toFixed(2)} ${currencies[userCurrency].symbol}\n`;
+            message += `   إجمالي الخصومات: ${totalDiscount.toFixed(2)} ${currencies[userCurrency].symbol}\n`;
+            message += `   *المبلغ الإجمالي: ${total.toFixed(2)} ${currencies[userCurrency].symbol}*\n\n`;
+            message += `💰 *العملة: ${currencies[userCurrency].name}*\n`;
             message += `🔗 *رابط المتجر:*\n`;
             message += window.location.href + `\n\n`;
             message += `💬 *أرجو التواصل معي لإتمام عملية الشراء*\n`;
@@ -2644,7 +3095,8 @@
                 'text-color': '#e0e0e0',
                 'button-color': '#006400',
                 'cart-color': '#00ff00',
-                'discount-color': '#ff6b6b'
+                'discount-color': '#ff6b6b',
+                'currency-color': '#4da6ff'
             };
             
             for (const [key, value] of Object.entries(defaultColors)) {
@@ -2777,7 +3229,7 @@
             
             document.body.style.backgroundImage = 'none';
             backgroundFileName.textContent = 'لم يتم اختيار صورة خلفية';
-            showNotification('تم إزالة خلفية الموقع');
+            showNotification('تم إزالة الخلفية الموقع');
         }
         
         // إضافة CSS مخصص
@@ -2825,6 +3277,10 @@
                 siteName: localStorage.getItem('extension_site_name'),
                 logo: localStorage.getItem('extension_logo'),
                 globalDiscount,
+                baseCurrency,
+                userCurrency,
+                autoGeolocation,
+                userCountry,
                 totalOrders: localStorage.getItem('extension_total_orders'),
                 exportedAt: new Date().toISOString()
             };
@@ -2892,6 +3348,22 @@
                     if (data.globalDiscount !== undefined) {
                         globalDiscount = data.globalDiscount;
                         localStorage.setItem('extension_global_discount', JSON.stringify(globalDiscount));
+                    }
+                    if (data.baseCurrency) {
+                        baseCurrency = data.baseCurrency;
+                        localStorage.setItem('extension_base_currency', baseCurrency);
+                    }
+                    if (data.userCurrency) {
+                        userCurrency = data.userCurrency;
+                        localStorage.setItem('extension_user_currency', userCurrency);
+                    }
+                    if (data.autoGeolocation !== undefined) {
+                        autoGeolocation = data.autoGeolocation;
+                        localStorage.setItem('extension_auto_geolocation', autoGeolocation);
+                    }
+                    if (data.userCountry) {
+                        userCountry = data.userCountry;
+                        localStorage.setItem('extension_user_country', userCountry);
                     }
                     if (data.totalOrders) {
                         localStorage.setItem('extension_total_orders', data.totalOrders);
@@ -2980,6 +3452,14 @@
             changeSiteNameForm.addEventListener('submit', changeSiteName);
             globalDiscountForm.addEventListener('submit', applyGlobalDiscount);
             removeGlobalDiscountBtn.addEventListener('click', removeGlobalDiscount);
+            saveBaseCurrencyBtn.addEventListener('click', changeBaseCurrency);
+            convertCurrencyBtn.addEventListener('click', convertCurrencyManual);
+            autoGeolocationCheckbox.addEventListener('change', toggleGeolocation);
+            updateExchangeRatesBtn.addEventListener('click', () => {
+                showNotification('تم تحديث أسعار الصرف');
+                updateExchangeRatesDisplay();
+            });
+            
             closeModal.addEventListener('click', () => { purchaseModal.style.display = 'none'; });
             closeImageModal.addEventListener('click', () => { imageModal.style.display = 'none'; });
             closeBanner.addEventListener('click', removeMobileVideo);
@@ -3068,7 +3548,21 @@
                     e.target.classList.add('active');
                     changeColor(color, type);
                 }
+                
+                if (e.target.classList.contains('currency-option') || e.target.parentElement.classList.contains('currency-option')) {
+                    const currencyOption = e.target.classList.contains('currency-option') ? e.target : e.target.parentElement;
+                    const parent = currencyOption.parentElement;
+                    parent.querySelectorAll('.currency-option').forEach(opt => {
+                        opt.classList.remove('active');
+                    });
+                    currencyOption.classList.add('active');
+                }
             });
+            
+            // إضافة مستمعي الأحداث لتحويل العملات عند تغيير القيم
+            convertFromInput.addEventListener('input', convertCurrencyManual);
+            convertFromCurrency.addEventListener('change', convertCurrencyManual);
+            convertToCurrency.addEventListener('change', convertCurrencyManual);
         }
         
         // تهيئة التطبيق
@@ -3078,10 +3572,12 @@
                     {
                         id: '1',
                         title: 'بوزر انستا',
-                        price: '5 ر.س',
+                        basePrice: 5,
+                        currency: 'YER',
                         discount: 10,
                         category: 'تقسامات مواد',
                         description: 'بوزر انستا شبه رياعي مع رقم في البوزر',
+                        price: '5 ر.ي',
                         image: 'https://via.placeholder.com/300x200/117a4e/ffffff?text=بوزر+انستا',
                         sold: false,
                         createdAt: new Date().toISOString()
@@ -3089,10 +3585,12 @@
                     {
                         id: '2',
                         title: 'منتج مثال 2',
-                        price: '200 ر.س',
+                        basePrice: 200,
+                        currency: 'YER',
                         discount: 0,
                         category: 'تقسامات مواد',
                         description: 'هذا وصف لمنتج مثال يظهر في المعرض',
+                        price: '200 ر.ي',
                         image: 'https://via.placeholder.com/300x200/0a3d2d/ffffff?text=منتج+2',
                         sold: false,
                         createdAt: new Date().toISOString()
@@ -3100,10 +3598,12 @@
                     {
                         id: '3',
                         title: 'منتج مثال 3',
-                        price: '150 ر.س',
+                        basePrice: 150,
+                        currency: 'YER',
                         discount: 20,
                         category: 'ارقام وهيبة',
                         description: 'هذا وصف لمنتج مثال يظهر في المعرض',
+                        price: '150 ر.ي',
                         image: 'https://via.placeholder.com/300x200/1aa86a/ffffff?text=منتج+3',
                         sold: false,
                         createdAt: new Date().toISOString()
@@ -3114,6 +3614,13 @@
             
             updateUI();
             setupEventListeners();
+            
+            // إذا كان الاكتشاف الجغرافي مفعلاً، قم باكتشاف الموقع
+            if (autoGeolocation) {
+                setTimeout(() => {
+                    detectUserLocation();
+                }, 1000);
+            }
         }
         
         // بدء التطبيق
