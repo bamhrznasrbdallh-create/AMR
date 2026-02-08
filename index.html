@@ -70,6 +70,33 @@
             transform: scale(1.1);
         }
         
+        /* زر خروج المدير */
+        .admin-logout-btn {
+            position: fixed;
+            bottom: 90px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s;
+            display: none;
+        }
+        
+        .admin-logout-btn:hover {
+            background-color: #ff0000;
+            transform: scale(1.1);
+        }
+        
         /* حقل كود الخصم */
         .discount-code-section {
             background-color: var(--light-bg);
@@ -346,6 +373,7 @@
             display: flex;
             gap: 10px;
             margin-top: auto;
+            flex-wrap: wrap;
         }
         
         .add-to-cart {
@@ -394,11 +422,47 @@
             padding: 8px 15px;
             border-radius: 4px;
             cursor: pointer;
-            margin-left: 5px;
+            transition: all 0.3s;
+            display: none;
+            flex: 1;
         }
         
         .edit-product-btn:hover {
             background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .remove-product {
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: none;
+            flex: 1;
+            transition: all 0.3s;
+        }
+        
+        .remove-product:hover {
+            background-color: #ff0000;
+            transform: translateY(-2px);
+        }
+        
+        .mark-as-sold {
+            background-color: var(--sold-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: none;
+            flex: 1;
+            transition: all 0.3s;
+        }
+        
+        .mark-as-sold:hover {
+            background-color: #ff3333;
             transform: translateY(-2px);
         }
         
@@ -1072,26 +1136,6 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
         
-        .remove-product {
-            background-color: var(--error-color);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: none;
-        }
-        
-        .mark-as-sold {
-            background-color: var(--sold-color);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: none;
-        }
-        
         .cart-icon-btn {
             margin-left: 8px;
         }
@@ -1540,6 +1584,14 @@
                 font-size: 1.2rem;
             }
             
+            .admin-logout-btn {
+                bottom: 75px;
+                left: 15px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -1582,7 +1634,9 @@
                 grid-template-columns: 1fr;
             }
             
-            .edit-product-btn {
+            .edit-product-btn,
+            .remove-product,
+            .mark-as-sold {
                 padding: 6px 10px;
                 font-size: 0.8rem;
             }
@@ -1599,6 +1653,11 @@
     <!-- زر المدير في وضع الصيانة -->
     <button class="admin-maintenance-btn" id="admin-maintenance-btn" title="دخول المدير">
         <i class="fas fa-lock"></i>
+    </button>
+
+    <!-- زر خروج المدير -->
+    <button class="admin-logout-btn" id="admin-logout-btn" title="خروج المدير">
+        <i class="fas fa-sign-out-alt"></i>
     </button>
 
     <!-- شاشة الترحيب -->
@@ -1702,6 +1761,7 @@
                 <div class="admin-tab" data-tab="media">إدارة الوسائط</div>
                 <div class="admin-tab" data-tab="stats">الإحصائيات</div>
                 <div class="admin-tab" data-tab="discounts">الخصومات</div>
+                <div class="admin-tab" data-tab="whatsapp">إعدادات واتساب</div>
                 <div class="admin-tab" data-tab="backup">النسخ الاحتياطي</div>
                 <div class="admin-tab" data-tab="settings">الإعدادات</div>
             </div>
@@ -1988,6 +2048,37 @@
                 </div>
             </div>
             
+            <!-- إعدادات واتساب -->
+            <div class="admin-tab-content" id="admin-whatsapp" style="display: none;">
+                <h3>إعدادات واتساب</h3>
+                
+                <div class="color-section">
+                    <h4>رقم واتساب لإرسال الطلبات</h4>
+                    <form class="admin-form" id="whatsapp-settings-form">
+                        <div class="admin-form">
+                            <label for="whatsapp-number">رقم واتساب:</label>
+                            <input type="text" id="whatsapp-number" placeholder="+967123456789" required>
+                            
+                            <label for="whatsapp-message-prefix">بادئة رسالة الطلب:</label>
+                            <textarea id="whatsapp-message-prefix" placeholder="رسالة تظهر في بداية كل طلب..." rows="3"></textarea>
+                            
+                            <label for="whatsapp-message-suffix">لاحقة رسالة الطلب:</label>
+                            <textarea id="whatsapp-message-suffix" placeholder="رسالة تظهر في نهاية كل طلب..." rows="3"></textarea>
+                        </div>
+                        
+                        <button type="submit">حفظ إعدادات واتساب</button>
+                    </form>
+                </div>
+                
+                <div class="color-section">
+                    <h4>معاينة رسالة الطلب</h4>
+                    <div style="background: var(--dark-bg); padding: 20px; border-radius: 10px; margin-top: 10px;">
+                        <h5>مثال على رسالة الطلب:</h5>
+                        <div id="whatsapp-preview" style="white-space: pre-line; margin-top: 10px; font-size: 0.9rem; color: #ccc;"></div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- النسخ الاحتياطي -->
             <div class="admin-tab-content" id="admin-backup" style="display: none;">
                 <h3>النسخ الاحتياطي والاستعادة</h3>
@@ -2228,6 +2319,8 @@
             siteName: 'امتداد',
             siteDescription: 'متجر إلكتروني متكامل',
             whatsappNumber: '+967123456789',
+            whatsappMessagePrefix: 'طلب جديد من متجر امتداد:\n\n',
+            whatsappMessageSuffix: '\n\nشكراً لشرائك من متجر امتداد!',
             enableWhatsapp: true,
             enableDiscounts: true,
             enable3DEffects: true,
@@ -2304,6 +2397,9 @@
             
             // تحميل إعدادات الخصومات
             loadDiscountCodes();
+            
+            // تحميل إعدادات واتساب
+            loadWhatsAppSettings();
         });
 
         // إعداد مستمعي الأحداث
@@ -2325,6 +2421,9 @@
                 document.getElementById('login-modal').style.display = 'flex';
             });
             
+            // زر خروج المدير
+            document.getElementById('admin-logout-btn').addEventListener('click', logoutAdmin);
+            
             // تسجيل الدخول
             document.getElementById('login-form').addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -2336,6 +2435,7 @@
                     document.getElementById('login-modal').style.display = 'none';
                     document.getElementById('admin-panel').style.display = 'block';
                     document.getElementById('admin-indicator').style.display = 'block';
+                    document.getElementById('admin-logout-btn').style.display = 'flex';
                     document.getElementById('current-currency-display').style.display = 'flex';
                     
                     showNotification('تم تسجيل الدخول بنجاح!', 'success');
@@ -2345,9 +2445,10 @@
                     loadAdminCategories();
                     loadAdminMessages();
                     loadDiscountCodesList();
+                    loadWhatsAppSettings();
                     
-                    // إذا كان المدير يريد إخفاء اللوحة، يمكن إضافة زر للإخفاء
-                    addAdminCloseButton();
+                    // إظهار أزرار المدير في المنتجات
+                    toggleAdminButtons(true);
                 } else {
                     showNotification('كلمة المرور غير صحيحة!', 'error');
                 }
@@ -2538,21 +2639,28 @@
                                 '<button class="add-to-cart" style="background: var(--sold-color); cursor: not-allowed;" disabled>تم البيع</button>' : 
                                 '<button class="add-to-cart"><i class="fas fa-cart-plus"></i> أضف للسلة</button>'
                             }
-                            ${isAdmin ? `
-                                <button class="edit-product-btn" onclick="editProduct(${product.id})">تعديل</button>
-                                <button class="remove-product" onclick="removeProduct(${product.id})">حذف</button>
-                                <button class="mark-as-sold" onclick="toggleSoldStatus(${product.id})">${product.sold ? 'إلغاء البيع' : 'تم البيع'}</button>
-                            ` : ''}
+                            <button class="edit-product-btn" onclick="editProduct(${product.id})">تعديل</button>
+                            <button class="remove-product" onclick="removeProduct(${product.id})">حذف</button>
+                            <button class="mark-as-sold" onclick="toggleSoldStatus(${product.id})">${product.sold ? 'إلغاء البيع' : 'تم البيع'}</button>
                         </div>
                     </div>
                 </div>
             `).join('');
             
-            // إظهار أزرار المدير إذا كان مسجلاً دخولاً
-            if (isAdmin) {
-                document.querySelectorAll('.remove-product').forEach(btn => btn.style.display = 'inline-block');
-                document.querySelectorAll('.mark-as-sold').forEach(btn => btn.style.display = 'inline-block');
-                document.querySelectorAll('.edit-product-btn').forEach(btn => btn.style.display = 'inline-block');
+            // إخفاء أو إظهار أزرار المدير
+            toggleAdminButtons(isAdmin);
+        }
+
+        // تبديل إظهار/إخفاء أزرار المدير
+        function toggleAdminButtons(show) {
+            if (show) {
+                document.querySelectorAll('.edit-product-btn').forEach(btn => btn.style.display = 'flex');
+                document.querySelectorAll('.remove-product').forEach(btn => btn.style.display = 'flex');
+                document.querySelectorAll('.mark-as-sold').forEach(btn => btn.style.display = 'flex');
+            } else {
+                document.querySelectorAll('.edit-product-btn').forEach(btn => btn.style.display = 'none');
+                document.querySelectorAll('.remove-product').forEach(btn => btn.style.display = 'none');
+                document.querySelectorAll('.mark-as-sold').forEach(btn => btn.style.display = 'none');
             }
         }
 
@@ -2745,8 +2853,7 @@
                 return;
             }
             
-            let message = 'طلب جديد من متجر امتداد:\n\n';
-            message += 'معلومة هامة: الدفع مقدم قبل أي عملية شحن\n\n';
+            let message = siteSettings.whatsappMessagePrefix || 'طلب جديد من متجر امتداد:\n\n';
             
             let subtotal = 0;
             
@@ -2778,7 +2885,10 @@
             message += `\n\n⚠️ تنبيه: الدفع مقدم قبل أي عملية شحن`;
             message += `\nيرجى الدفع قبل تأكيد الشحنة`;
             
-            message += `\n\nشكراً لشرائك من متجر امتداد!`;
+            // إضافة اللاحقة
+            if (siteSettings.whatsappMessageSuffix) {
+                message += siteSettings.whatsappMessageSuffix;
+            }
             
             const phoneNumber = siteSettings.whatsappNumber || '+967123456789';
             const encodedMessage = encodeURIComponent(message);
@@ -2893,6 +3003,9 @@
                         updateBackupInfo();
                     } else if (tabId === 'stats') {
                         updateStats();
+                    } else if (tabId === 'whatsapp') {
+                        loadWhatsAppSettings();
+                        updateWhatsAppPreview();
                     }
                 });
             });
@@ -3088,6 +3201,17 @@
                 const fileName = e.target.files[0] ? e.target.files[0].name : 'لم يتم اختيار صورة';
                 document.getElementById('edit-file-name').textContent = fileName;
             });
+            
+            // إعدادات واتساب
+            document.getElementById('whatsapp-settings-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveWhatsAppSettings();
+            });
+            
+            // تحديث معاينة واتساب
+            document.getElementById('whatsapp-number').addEventListener('input', updateWhatsAppPreview);
+            document.getElementById('whatsapp-message-prefix').addEventListener('input', updateWhatsAppPreview);
+            document.getElementById('whatsapp-message-suffix').addEventListener('input', updateWhatsAppPreview);
         }
 
         // إضافة منتج جديد
@@ -3454,6 +3578,74 @@
             showNotification('تم حفظ الإعدادات بنجاح!', 'success');
         }
 
+        // تحميل إعدادات واتساب
+        function loadWhatsAppSettings() {
+            if (document.getElementById('whatsapp-number')) {
+                document.getElementById('whatsapp-number').value = siteSettings.whatsappNumber || '+967123456789';
+                document.getElementById('whatsapp-message-prefix').value = siteSettings.whatsappMessagePrefix || 'طلب جديد من متجر امتداد:\n\n';
+                document.getElementById('whatsapp-message-suffix').value = siteSettings.whatsappMessageSuffix || '\n\nشكراً لشرائك من متجر امتداد!';
+            }
+        }
+
+        // حفظ إعدادات واتساب
+        function saveWhatsAppSettings() {
+            siteSettings.whatsappNumber = document.getElementById('whatsapp-number').value;
+            siteSettings.whatsappMessagePrefix = document.getElementById('whatsapp-message-prefix').value;
+            siteSettings.whatsappMessageSuffix = document.getElementById('whatsapp-message-suffix').value;
+            
+            localStorage.setItem('siteSettings', JSON.stringify(siteSettings));
+            
+            // تحديث قسم الاتصال بنا
+            updateContactSection();
+            
+            showNotification('تم حفظ إعدادات واتساب بنجاح!', 'success');
+        }
+
+        // تحديث قسم الاتصال بنا
+        function updateContactSection() {
+            const contactSection = document.getElementById('contact-section');
+            const whatsappNumber = siteSettings.whatsappNumber || '+967123456789';
+            
+            contactSection.innerHTML = `
+                <h2 style="text-align: center; margin-bottom: 20px; color: var(--accent-color);">اتصل بنا</h2>
+                <div class="bank-payment-section">
+                    <h3>طرق التواصل</h3>
+                    <p>يمكنك التواصل معنا عبر:</p>
+                    <ul style="margin: 15px 0; padding-right: 20px;">
+                        <li style="margin-bottom: 10px;">واتساب: ${whatsappNumber}</li>
+                        <li style="margin-bottom: 10px;">هاتف: ${whatsappNumber}</li>
+                        <li style="margin-bottom: 10px;">البريد الإلكتروني: info@imtidad.com</li>
+                    </ul>
+                    <p>ساعات العمل: من الأحد إلى الخميس، من 9 صباحاً إلى 5 مساءً</p>
+                </div>
+            `;
+        }
+
+        // تحديث معاينة رسالة واتساب
+        function updateWhatsAppPreview() {
+            const preview = document.getElementById('whatsapp-preview');
+            if (!preview) return;
+            
+            const number = document.getElementById('whatsapp-number').value || '+967123456789';
+            const prefix = document.getElementById('whatsapp-message-prefix').value || 'طلب جديد من متجر امتداد:\n\n';
+            const suffix = document.getElementById('whatsapp-message-suffix').value || '\n\nشكراً لشرائك من متجر امتداد!';
+            
+            const sampleOrder = `
+${prefix}
+- منتج تجريبي (إلكترونيات): 2 × 100.00 ر.ي = 200.00 ر.ي
+- منتج آخر (ملابس): 1 × 50.00 ر.ي = 50.00 ر.ي
+
+المجموع: 250.00 ر.ي
+الإجمالي بعد الخصم: 250.00 ر.ي
+
+⚠️ تنبيه: الدفع مقدم قبل أي عملية شحن
+يرجى الدفع قبل تأكيد الشحنة
+${suffix}
+            `.trim();
+            
+            preview.textContent = sampleOrder;
+        }
+
         // تغيير كلمة مرور المدير
         function changeAdminPassword() {
             const current = document.getElementById('current-password').value;
@@ -3666,41 +3858,23 @@
             showNotification('تم إعادة ضبط الألوان إلى الافتراضية!', 'success');
         }
 
-        // إضافة زر إغلاق لوحة التحكم
-        function addAdminCloseButton() {
-            const adminPanel = document.getElementById('admin-panel');
-            const closeButton = document.createElement('button');
-            closeButton.innerHTML = 'إغلاق لوحة التحكم';
-            closeButton.style.cssText = `
-                position: absolute;
-                top: 20px;
-                left: 20px;
-                padding: 10px 20px;
-                background: var(--error-color);
-                color: white;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: bold;
-                z-index: 1;
-            `;
+        // خروج المدير
+        function logoutAdmin() {
+            if (!confirm('هل تريد تسجيل الخروج من وضع المدير؟')) return;
             
-            closeButton.addEventListener('click', () => {
-                adminPanel.style.display = 'none';
-                isAdmin = false;
-                localStorage.setItem('isAdmin', JSON.stringify(isAdmin));
-                document.getElementById('admin-indicator').style.display = 'none';
-                document.getElementById('current-currency-display').style.display = 'none';
-                
-                // إخفاء أزرار المدير في المنتجات
-                document.querySelectorAll('.remove-product').forEach(btn => btn.style.display = 'none');
-                document.querySelectorAll('.mark-as-sold').forEach(btn => btn.style.display = 'none');
-                document.querySelectorAll('.edit-product-btn').forEach(btn => btn.style.display = 'none');
-                
-                showNotification('تم تسجيل الخروج من وضع المدير', 'success');
-            });
+            isAdmin = false;
+            localStorage.setItem('isAdmin', JSON.stringify(isAdmin));
             
-            adminPanel.appendChild(closeButton);
+            // إخفاء لوحة التحكم والمؤشرات
+            document.getElementById('admin-panel').style.display = 'none';
+            document.getElementById('admin-indicator').style.display = 'none';
+            document.getElementById('admin-logout-btn').style.display = 'none';
+            document.getElementById('current-currency-display').style.display = 'none';
+            
+            // إخفاء أزرار المدير في المنتجات
+            toggleAdminButtons(false);
+            
+            showNotification('تم تسجيل الخروج من وضع المدير', 'success');
         }
 
         // تحديث اختيارات الأقسام في النماذج المختلفة
@@ -4157,6 +4331,8 @@
                 siteName: 'امتداد',
                 siteDescription: 'متجر إلكتروني متكامل',
                 whatsappNumber: '+967123456789',
+                whatsappMessagePrefix: 'طلب جديد من متجر امتداد:\n\n',
+                whatsappMessageSuffix: '\n\nشكراً لشرائك من متجر امتداد!',
                 enableWhatsapp: true,
                 enableDiscounts: true,
                 enable3DEffects: true,
